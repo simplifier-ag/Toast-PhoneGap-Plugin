@@ -14,6 +14,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.lifecycle.Lifecycle;
+
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.PluginResult;
@@ -40,9 +42,6 @@ public class Toast extends CordovaPlugin {
   private static final boolean IS_AT_LEAST_PIE = Build.VERSION.SDK_INT >= 28;
   private static final boolean IS_AT_LEAST_R = Build.VERSION.SDK_INT >= 30;
 
-  // note that webView.isPaused() is not Xwalk compatible, so tracking it poor-man style
-  private boolean isPaused;
-
   private String currentMessage;
   private JSONObject currentData;
   private static CountDownTimer _timer;
@@ -56,7 +55,7 @@ public class Toast extends CordovaPlugin {
       return true;
 
     } else if (ACTION_SHOW_EVENT.equals(action)) {
-      if (this.isPaused) {
+      if (!cordova.getActivity().getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED))  {
         return true;
       }
 
@@ -264,11 +263,5 @@ public class Toast extends CordovaPlugin {
   @Override
   public void onPause(boolean multitasking) {
     hide();
-    this.isPaused = true;
-  }
-
-  @Override
-  public void onResume(boolean multitasking) {
-    this.isPaused = false;
   }
 }
